@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * @author hugoj
  */
 public class Schedule {
-        private final IntegerProperty scheduleId = new SimpleIntegerProperty();
+    private final IntegerProperty scheduleId = new SimpleIntegerProperty();
     private final IntegerProperty driverId = new SimpleIntegerProperty();
     private final IntegerProperty pedicabId = new SimpleIntegerProperty();
     private final IntegerProperty operatorId = new SimpleIntegerProperty();

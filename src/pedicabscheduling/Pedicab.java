@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package pedicabscheduling;
 import javafx.beans.property.*;
 /**
@@ -9,7 +6,7 @@ import javafx.beans.property.*;
  * @author hugoj
  */
 public class Pedicab {
-     private final IntegerProperty pedicabId = new SimpleIntegerProperty();
+    private final IntegerProperty pedicabId = new SimpleIntegerProperty();
     private final StringProperty pedicabNumber = new SimpleStringProperty();
     private final StringProperty model = new SimpleStringProperty();
     private final StringProperty registrationNumber = new SimpleStringProperty();
