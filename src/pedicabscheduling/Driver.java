@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package pedicabscheduling;
-import javafx.beans.property.*;
-/**
- *
- * @author hugoj
- */
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 public class Driver {
     private final IntegerProperty driverId = new SimpleIntegerProperty();
     private final StringProperty driverName = new SimpleStringProperty();
@@ -17,6 +14,14 @@ public class Driver {
 
     public Driver() {
         // Default constructor
+    }
+
+    public Driver(int driverId, String driverName, String licenseNumber, String contactNumber, String address) {
+        this.driverId.set(driverId);
+        this.driverName.set(driverName);
+        this.licenseNumber.set(licenseNumber);
+        this.contactNumber.set(contactNumber);
+        this.address.set(address);
     }
 
     // Getters and setters for each property

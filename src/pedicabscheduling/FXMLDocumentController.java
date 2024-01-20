@@ -1,21 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXML2.java to edit this template
- */
 package pedicabscheduling;
 
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 /**
  *
@@ -94,17 +97,23 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Button addBtnPedicab;
     @FXML
-    private TextField pedicabNumber1;
-    @FXML
-    private TextField model1;
-    @FXML
-    private TextField regNo;
-    @FXML
     private TextField pedicabNumberTxtField;
     @FXML
     private TextField modelTextField;
     @FXML
     private TextField regNoTextField;
+    @FXML
+    private TableView<Driver> tableView;
+    @FXML
+    private TableColumn<Driver, Integer> idColumn;
+    @FXML
+    private TableColumn<Driver, String> nameColumn;
+    @FXML
+    private TableColumn<Driver, String> licenseColumn;
+    @FXML
+    private TableColumn<Driver, String> contactColumn;
+    @FXML
+    private TableColumn<Driver, String> addressColumn;
     
     
    
@@ -113,8 +122,22 @@ public class FXMLDocumentController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-    }    
+
+    idColumn.setCellValueFactory(new PropertyValueFactory<>("driverId"));
+    nameColumn.setCellValueFactory(new PropertyValueFactory<>("driverName"));
+    licenseColumn.setCellValueFactory(new PropertyValueFactory<>("licenseNumber"));
+    contactColumn.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
+    addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+
+    try {
+        ObservableList<Driver> driverList = getDrivers();
+        tableView.setItems(driverList);
+    } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+    }
+    }
+    
+
     
     @FXML
     private void addButtonAction(ActionEvent event) throws ClassNotFoundException {
@@ -137,7 +160,9 @@ public class FXMLDocumentController implements Initializable {
 
             // Close the connection
             connection.close();
-
+            
+            ObservableList<Driver> driverList = getDrivers();
+            tableView.setItems(driverList);
             // You can add a success message or clear the fields after successful insertion
             System.out.println("Driver added successfully");
             driverNameField.clear();
@@ -150,6 +175,7 @@ public class FXMLDocumentController implements Initializable {
             // Handle the exception appropriately (show an error message, log it, etc.)
         }
     }
+    
      @FXML
     private void addOperator(ActionEvent event) throws ClassNotFoundException {
         try {
@@ -216,5 +242,44 @@ public class FXMLDocumentController implements Initializable {
             e.printStackTrace();
             // Handle the exception appropriately (show an error message, log it, etc.)
         }
+        
+        
     }
+    
+    
+    private ObservableList<Driver> getDrivers() throws ClassNotFoundException {
+    ObservableList<Driver> driverList = FXCollections.observableArrayList();
+
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+            // Connect to MySQL database
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/pedicabsys", "root", "Kjjdkp5119326");
+
+        String sql = "SELECT * FROM driver";
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        while (resultSet.next()) {
+            int driverId = resultSet.getInt("driver_id");
+            String driverName = resultSet.getString("driver_name");
+            String licenseNumber = resultSet.getString("license_number");
+            String contactNumber = resultSet.getString("contact_number");
+            String address = resultSet.getString("address");
+
+            driverList.add(new Driver(driverId, driverName, licenseNumber, contactNumber, address));
+        }
+
+        // Close resources
+        resultSet.close();
+        statement.close();
+        connection.close();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return driverList;
 }
+
+}
+
