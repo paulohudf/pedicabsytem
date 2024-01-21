@@ -15,6 +15,12 @@ public class Pedicab {
         // Default constructor
     }
 
+    Pedicab(int pedicabId, String pedicabNumber, String model, String registrationNumber) {
+       this.pedicabId.set(pedicabId);
+       this.pedicabNumber.set(pedicabNumber);
+       this.model.set(model);
+       this.pedicabNumber.set(registrationNumber);
+    }
     // Getters and setters for each property
     public int getPedicabId() {
         return pedicabId.get();

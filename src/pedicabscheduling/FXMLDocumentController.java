@@ -20,10 +20,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-/**
- *
- * @author hugoj
- */
+
 public class FXMLDocumentController implements Initializable {
 
     @FXML
@@ -102,6 +99,7 @@ public class FXMLDocumentController implements Initializable {
     private TextField modelTextField;
     @FXML
     private TextField regNoTextField;
+    //Driver 
     @FXML
     private TableView<Driver> tableView;
     @FXML
@@ -114,25 +112,62 @@ public class FXMLDocumentController implements Initializable {
     private TableColumn<Driver, String> contactColumn;
     @FXML
     private TableColumn<Driver, String> addressColumn;
+    //Pedicab
+    @FXML
+    private TableView<Pedicab> pedicabTableView;
+    @FXML
+    private TableView<?> ScheduleTableVIew;
+    //Operator 
+    @FXML
+    private TableView<Operator> operatorTableView;
+    @FXML
+    private TableColumn<Operator, Integer> operatorColumnId;
     
+    @FXML
+    private TableColumn<Operator, String> operatorColumnContact;
+    @FXML
+    private TableColumn<Operator, String> operatorColumnAddress;
+    @FXML
+    private TableColumn<Operator, String> operatorColumnName;
+    @FXML
+    private TableColumn<Pedicab, Integer> pedicabColumnId;
+    @FXML
+    private TableColumn<Pedicab, String> pedicabColumnModel;
+    @FXML
+    private TableColumn<Pedicab, String> pedicabRegistrationNo;
+    @FXML
+    private TableColumn<?, ?> pedicabColumnNumber;
     
-   
     
    
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
+        //drivers column
     idColumn.setCellValueFactory(new PropertyValueFactory<>("driverId"));
     nameColumn.setCellValueFactory(new PropertyValueFactory<>("driverName"));
     licenseColumn.setCellValueFactory(new PropertyValueFactory<>("licenseNumber"));
     contactColumn.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
     addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
-
+    //operator column
+    operatorColumnId.setCellValueFactory(new PropertyValueFactory<>("operatorId"));
+    operatorColumnName.setCellValueFactory(new PropertyValueFactory<>("operatorName"));
+    operatorColumnContact.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
+    operatorColumnAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
+    
+    //pedicab column table view
+    pedicabColumnId.setCellValueFactory(new PropertyValueFactory<>("pedicabId"));
+    pedicabColumnNumber.setCellValueFactory(new PropertyValueFactory<>("pedicabNumber"));
+    pedicabColumnModel.setCellValueFactory(new PropertyValueFactory<>("model"));
+    pedicabRegistrationNo.setCellValueFactory(new PropertyValueFactory<>("registrationNumber"));
     try {
         ObservableList<Driver> driverList = getDrivers();
         tableView.setItems(driverList);
-    } catch (ClassNotFoundException e) {
+        ObservableList<Operator> operatorList = getOperators();
+        operatorTableView.setItems(operatorList);
+        ObservableList<Pedicab> pedicabList = getPedicabs();
+        pedicabTableView.setItems(pedicabList);
+     } catch (ClassNotFoundException e) {
         e.printStackTrace();
     }
     }
@@ -140,7 +175,7 @@ public class FXMLDocumentController implements Initializable {
 
     
     @FXML
-    private void addButtonAction(ActionEvent event) throws ClassNotFoundException {
+    private void addDrivers(ActionEvent event) throws ClassNotFoundException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             // Connect to MySQL database
@@ -161,8 +196,10 @@ public class FXMLDocumentController implements Initializable {
             // Close the connection
             connection.close();
             
+            //update the table view of the driver
             ObservableList<Driver> driverList = getDrivers();
             tableView.setItems(driverList);
+            
             // You can add a success message or clear the fields after successful insertion
             System.out.println("Driver added successfully");
             driverNameField.clear();
@@ -176,7 +213,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
     
-     @FXML
+    @FXML
     private void addOperator(ActionEvent event) throws ClassNotFoundException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -197,7 +234,10 @@ public class FXMLDocumentController implements Initializable {
 
             // Close the connection
             connection.close();
-
+            
+            //update the table view of the driver
+            ObservableList<Operator> operatorList = getOperators();
+            operatorTableView.setItems(operatorList);
             // You can add a success message or clear the fields after successful insertion
             System.out.println("Operator added successfully");
             operatorName.clear();
@@ -231,7 +271,8 @@ public class FXMLDocumentController implements Initializable {
 
             // Close the connection
             connection.close();
-
+            ObservableList<Pedicab> pedicabList = getPedicabs();
+            pedicabTableView.setItems(pedicabList);
             // You can add a success message or clear the fields after successful insertion
             System.out.println("Pedicab added successfully");
             pedicabNumberTxtField.clear();
@@ -252,7 +293,7 @@ public class FXMLDocumentController implements Initializable {
 
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
-            // Connect to MySQL database
+        // Connect to MySQL database
         Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/pedicabsys", "root", "Kjjdkp5119326");
 
         String sql = "SELECT * FROM driver";
@@ -281,5 +322,70 @@ public class FXMLDocumentController implements Initializable {
     return driverList;
 }
 
+    private ObservableList<Operator> getOperators() throws ClassNotFoundException {
+    ObservableList<Operator> operatorList = FXCollections.observableArrayList();
+
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        // Connect to MySQL database
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/pedicabsys", "root", "Kjjdkp5119326");
+
+        String sql = "SELECT * FROM operator";
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        while (resultSet.next()) {
+            int operatorId = resultSet.getInt("operator_id");
+            String operatorName = resultSet.getString("operator_name");
+            String operatorNumber = resultSet.getString("contact_number");
+            String address = resultSet.getString("address");
+
+            operatorList.add(new Operator(operatorId, operatorName, operatorNumber, address));
+        }
+
+        // Close resources
+        resultSet.close();
+        statement.close();
+        connection.close();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return operatorList;
+}
+    
+    private ObservableList<Pedicab> getPedicabs() throws ClassNotFoundException {
+    ObservableList<Pedicab> pedicabList = FXCollections.observableArrayList();
+
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        // Connect to MySQL database
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/pedicabsys", "root", "Kjjdkp5119326");
+
+        String sql = "SELECT * FROM pedicab";
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        while (resultSet.next()) {
+            int pedicabId = resultSet.getInt("pedicab_id");
+            String pedicabNumber = resultSet.getString("pedicab_number");
+            String model = resultSet.getString("model");
+            String registrationNumber = resultSet.getString("registration_number");
+
+            pedicabList.add(new Pedicab(pedicabId, pedicabNumber, model, registrationNumber));
+        }
+
+        // Close resources
+        resultSet.close();
+        statement.close();
+        connection.close();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return pedicabList;
+}
 }
 

@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pedicabscheduling;
 import javafx.beans.property.*;
 
-/**
- *
- * @author hugoj
- */
+
 public class Operator {
     private final IntegerProperty operatorId = new SimpleIntegerProperty();
     private final StringProperty operatorName = new SimpleStringProperty();
@@ -16,7 +9,14 @@ public class Operator {
     private final StringProperty address = new SimpleStringProperty();
 
     public Operator() {
-        // Default constructor
+        
+    }
+
+    Operator(int operatorId, String operatorName, String operatorNumber, String address) {
+        this.operatorId.set(operatorId);
+        this.operatorName.set(operatorName);
+        this.contactNumber.set(operatorNumber);
+        this.address.set(address);
     }
 
     // Getters and setters for each property
