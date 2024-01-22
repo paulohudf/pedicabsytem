@@ -19,7 +19,7 @@ public class Pedicab {
        this.pedicabId.set(pedicabId);
        this.pedicabNumber.set(pedicabNumber);
        this.model.set(model);
-       this.pedicabNumber.set(registrationNumber);
+       this.registrationNumber.set(registrationNumber);
     }
     // Getters and setters for each property
     public int getPedicabId() {

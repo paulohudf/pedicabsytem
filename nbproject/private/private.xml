@@ -5,8 +5,10 @@
         <group>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/PedicabScheduling.java</file>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/Pedicab.java</file>
+            <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/Driver.java</file>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/FXMLDocumentController.java</file>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/Schedule.java</file>
+            <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/DatabaseConnection.java</file>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/Operator.java</file>
             <file>file:/C:/Users/hugoj/OneDrive/Documents/NetBeansProjects/PedicabScheduling/src/pedicabscheduling/FXMLDocument.fxml</file>
         </group>

@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,13 +16,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-
+import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 public class FXMLDocumentController implements Initializable {
 
     @FXML
@@ -37,12 +44,6 @@ public class FXMLDocumentController implements Initializable {
     private Label label1;
     @FXML
     private Label label2;
-    @FXML
-    private TextField driverNameField2;
-    @FXML
-    private TextField contactNumberField2;
-    @FXML
-    private TextField addressField1;
     @FXML
     private Button addBtnDrvr;
     @FXML
@@ -136,8 +137,32 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private TableColumn<Pedicab, String> pedicabRegistrationNo;
     @FXML
-    private TableColumn<?, ?> pedicabColumnNumber;
-    
+    private TableColumn<Pedicab, String> pedicabColumnNumber;
+    @FXML
+    private TextField driverNameSched;
+    @FXML
+    private TextField operatorNameSched;
+    @FXML
+    private TextField pedicabNumberSched;
+    @FXML
+    private TextField pedicabModelSched;
+    @FXML
+    private DatePicker startDatePicker;
+    @FXML
+    private Label DateStartLabel;
+    @FXML
+    private DatePicker endDatePicker;
+    @FXML
+    private Label DateEndLabel;
+    @FXML
+    private ListView<String> driverListView;
+    private Connection connection;
+    @FXML
+    private ListView<String> operatorListviewSched;
+    @FXML
+    private ListView<String> pedicabListviewSched;
+    @FXML
+    private ListView<String> pedicabModelListviewSched;
     
    
     
@@ -161,6 +186,10 @@ public class FXMLDocumentController implements Initializable {
     pedicabColumnModel.setCellValueFactory(new PropertyValueFactory<>("model"));
     pedicabRegistrationNo.setCellValueFactory(new PropertyValueFactory<>("registrationNumber"));
     try {
+        pedicabModelListviewSched.setVisible(false);
+        driverListView.setVisible(false);
+        operatorListviewSched.setVisible(false);
+        pedicabListviewSched.setVisible(false);
         ObservableList<Driver> driverList = getDrivers();
         tableView.setItems(driverList);
         ObservableList<Operator> operatorList = getOperators();
@@ -172,7 +201,6 @@ public class FXMLDocumentController implements Initializable {
     }
     }
     
-
     
     @FXML
     private void addDrivers(ActionEvent event) throws ClassNotFoundException {
@@ -287,6 +315,49 @@ public class FXMLDocumentController implements Initializable {
         
     }
     
+    @FXML
+    private void addSchedule(ActionEvent event) {
+    Schedule schedule = new Schedule();
+
+    try {
+        // Load the MySQL JDBC driver
+        Class.forName("com.mysql.cj.jdbc.Driver");
+
+        // Connect to MySQL database
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/pedicabsys", "root", "Kjjdkp5119326")) {
+
+            // Prepare the SQL statement
+            String sql = "INSERT INTO Schedule (driver_id, pedicab_id, operator_id, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, schedule.getDriverId());
+                preparedStatement.setInt(2, schedule.getPedicabId());
+                preparedStatement.setInt(3, schedule.getOperatorId());
+                preparedStatement.setObject(4, schedule.getStartTime());
+                preparedStatement.setObject(5, schedule.getEndTime());
+
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the exception appropriately (show an error message, log it, etc.)
+            }
+        }
+
+        // You can add a success message or clear the fields after successful insertion
+        System.out.println("Schedule added successfully");
+        // Clear the JavaFX fields
+        driverNameSched.setText(null);
+        pedicabModelSched.setText(null);
+        operatorNameSched.setText(null);
+        startDatePicker.setValue(null);
+        endDatePicker.setValue(null);
+
+    } catch (ClassNotFoundException | SQLException e) {
+        e.printStackTrace();
+       
+    }
+}
+
     
     private ObservableList<Driver> getDrivers() throws ClassNotFoundException {
     ObservableList<Driver> driverList = FXCollections.observableArrayList();
@@ -386,6 +457,287 @@ public class FXMLDocumentController implements Initializable {
     }
 
     return pedicabList;
+}
+    
+    
+    
+    @FXML
+    private void handleKeyTypedSchedDriver(KeyEvent key) {
+    TextField searchTextField = driverNameSched;
+    String userInput = searchTextField.getText().trim();
+
+    // Clear previous suggestions
+    driverListView.getItems().clear();
+
+    if (!userInput.isEmpty()) {
+        // Search for matching driver names
+        List<String> matchingDrivers = searchDrivers(userInput);
+
+        // Add matching drivers to the driverListView
+        driverListView.getItems().addAll(matchingDrivers);
+
+        // Show the suggestion list
+        driverListView.setVisible(!matchingDrivers.isEmpty());
+
+        // Handle selection when Enter key is pressed
+        driverListView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleDriverSelection();
+            }
+        });
+
+        // Handle selection when an item is clicked
+        driverListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) { // Single click
+                handleDriverSelection();
+            }
+        });
+
+    } else {
+        // Hide the suggestion list if the search field is empty
+        driverListView.setVisible(false);
+    }
+    
+    
+}
+    
+    private void handleDriverSelection() {
+    // Get the selected item from the list view
+    String selectedDriver = driverListView.getSelectionModel().getSelectedItem();
+
+    if (selectedDriver != null) {
+        
+        // Set the selected value back to the TextField
+        driverNameSched.setText(selectedDriver);
+
+        // Hide the suggestion list
+        driverListView.setVisible(false);
+    }
+}
+
+    private List<String> searchDrivers(String userInput) {
+    List<String> matchingDrivers = new ArrayList<>();
+
+    String query = "SELECT driver_name FROM driver WHERE driver_name LIKE ?";
+    connection = DatabaseConnection.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, "%" + userInput + "%");
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                matchingDrivers.add(resultSet.getString("driver_name"));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return matchingDrivers;
+}
+    
+    @FXML
+    private void handleKeyTypedSchedOperator(KeyEvent key) {
+    TextField searchTextField = operatorNameSched;
+    String userInput = searchTextField.getText().trim();
+
+    // Clear previous suggestions
+    operatorListviewSched.getItems().clear();
+
+    if (!userInput.isEmpty()) {
+        // Search for matching driver names
+        List<String> matchingOperators = searchOperators(userInput);
+
+        // Add matching drivers to the driverListView
+        operatorListviewSched.getItems().addAll(matchingOperators);
+
+        // Show the suggestion list
+        operatorListviewSched.setVisible(!matchingOperators.isEmpty());
+
+        // Handle selection when Enter key is pressed
+        operatorListviewSched.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleOperatorSelection();
+            }
+        });
+
+        // Handle selection when an item is clicked
+        operatorListviewSched.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) { 
+                handleOperatorSelection();
+            }
+        });
+
+    } else {
+        // Hide the suggestion list if the search field is empty
+        operatorListviewSched.setVisible(false);
+    }
+    
+    
+}
+    private List<String> searchOperators(String userInput) {
+    List<String> matchingOperators = new ArrayList<>();
+
+    String query = "SELECT operator_name FROM operator WHERE operator_name LIKE ?";
+    connection = DatabaseConnection.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, "%" + userInput + "%");
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                matchingOperators.add(resultSet.getString("operator_name"));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return matchingOperators;
+}
+    private void handleOperatorSelection() {
+    // Get the selected item from the list view
+    String selectedDriver = operatorListviewSched.getSelectionModel().getSelectedItem();
+
+    if (selectedDriver != null) {
+        // Set the selected value back to the TextField
+        operatorNameSched.setText(selectedDriver);
+
+        // Hide the suggestion list
+        operatorListviewSched.setVisible(false);
+    }
+}
+    
+   @FXML
+    private void handleKeyTypedSchedPedicabNumber(KeyEvent key) {
+    TextField searchTextField = pedicabNumberSched;
+    String userInput = searchTextField.getText().trim();
+
+    // Clear previous suggestions
+    pedicabListviewSched.getItems().clear();
+
+    if (!userInput.isEmpty()) {
+        // Search for matching driver names
+        List<String> matchingPedicabNum = searchPedicabNumber(userInput);
+
+        // Add matching drivers to the driverListView
+        pedicabListviewSched.getItems().addAll(matchingPedicabNum);
+
+        // Show the suggestion list
+        pedicabListviewSched.setVisible(!matchingPedicabNum.isEmpty());
+
+        // Handle selection when Enter key is pressed
+        pedicabListviewSched.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handlePedicabNumberSelection();
+            }
+        });
+
+        // Handle selection when an item is clicked
+        pedicabListviewSched.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) { 
+                handlePedicabNumberSelection();
+            }
+        });
+
+    } else {
+        // Hide the suggestion list if the search field is empty
+        pedicabListviewSched.setVisible(false);
+    }
+    
+    
+}
+    private List<String> searchPedicabNumber(String userInput) {
+    List<String> matchingPedicabNum = new ArrayList<>();
+
+    String query = "SELECT pedicab_number FROM pedicab WHERE pedicab_number LIKE ?";
+    connection = DatabaseConnection.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, "%" + userInput + "%");
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                matchingPedicabNum.add(resultSet.getString("pedicab_number"));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return matchingPedicabNum;
+}
+    private void handlePedicabNumberSelection() {
+    // Get the selected item from the list view
+    String selectedPedicabNum = pedicabListviewSched.getSelectionModel().getSelectedItem();
+
+    if (selectedPedicabNum != null) {
+        // Set the selected value back to the TextField
+        pedicabNumberSched.setText(selectedPedicabNum);
+
+        // Hide the suggestion list
+        pedicabListviewSched.setVisible(false);
+    }
+}
+    
+    @FXML
+    private void handleKeyTypedSchedPedicabModel(KeyEvent key) {
+    TextField searchTextField = pedicabModelSched;
+    String userInput = searchTextField.getText().trim();
+
+    // Clear previous suggestions
+    pedicabModelListviewSched.getItems().clear();
+
+    if (!userInput.isEmpty()) {
+        // Search for matching driver names
+        List<String> matchingPedicabModel = searchPedicabModel(userInput);
+
+        // Add matching drivers to the driverListView
+        pedicabModelListviewSched.getItems().addAll(matchingPedicabModel);
+
+        // Show the suggestion list
+        pedicabModelListviewSched.setVisible(!matchingPedicabModel.isEmpty());
+
+        // Handle selection when Enter key is pressed
+        pedicabModelListviewSched.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handlePedicabModelSelection();
+            }
+        });
+
+        // Handle selection when an item is clicked
+        pedicabModelListviewSched.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) { 
+                handlePedicabModelSelection();
+            }
+        });
+
+    } else {
+        // Hide the suggestion list if the search field is empty
+        pedicabModelListviewSched.setVisible(false);
+    }
+    
+    
+}
+    private List<String> searchPedicabModel(String userInput) {
+    List<String> matchingPedicabModel = new ArrayList<>();
+
+    String query = "SELECT model FROM pedicab WHERE model LIKE ?";
+    connection = DatabaseConnection.getConnection();
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, "%" + userInput + "%");
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                matchingPedicabModel.add(resultSet.getString("model"));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return matchingPedicabModel;
+}
+    private void handlePedicabModelSelection() {
+    // Get the selected item from the list view
+    String selectedPedicabModel = pedicabModelListviewSched.getSelectionModel().getSelectedItem();
+
+    if (selectedPedicabModel != null) {
+        // Set the selected value back to the TextField
+        pedicabModelSched.setText(selectedPedicabModel);
+
+        // Hide the suggestion list
+        pedicabModelListviewSched.setVisible(false);
+    }
 }
 }
 
